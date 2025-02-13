@@ -22,8 +22,7 @@ import pycuda.autoinit
 import pycuda.driver as cuda
 
 # Load the shared library
-# lib = ctypes.CDLL("minitorch/cuda_kernels/combine.so")
-lib = ctypes.CDLL("src/combine.so")
+lib = ctypes.CDLL("minitorch/cuda_kernels/combine.so")
 datatype = np.float32
 
 # function map
