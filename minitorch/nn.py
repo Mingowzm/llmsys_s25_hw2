@@ -96,7 +96,7 @@ class Max(Function):
         return (out == input) * grad_output, 0.0
         # END ASSIGN4.4
 
-        
+
 def max(input: Tensor, dim: int) -> Tensor:
     return Max.apply(input, input._ensure_tensor(dim))
 
@@ -187,13 +187,13 @@ def dropout(input: Tensor, rate: float, ignore: bool = False) -> Tensor:
 
 def layer_norm(input: Tensor, eps: float = 1e-5) -> Tensor:
     # ASSIGN4.4
-    
+
     # Calculate mean and variance along the last axis (features)
     batch, channel, height, width = input.shape
-    
+
     mean = input.mean(dim=4).view(batch, channel, height, width)
     variance = input.var(dim=4).view(batch, channel, height, width)
-    
+
     input_normalized = (input - mean) / (variance + eps)
     return input_normalized
 
@@ -202,7 +202,7 @@ def layer_norm(input: Tensor, eps: float = 1e-5) -> Tensor:
 
 
 
-def GELU(input: Tensor) -> Tensor: 
+def GELU(input: Tensor) -> Tensor:
     """Applies the GELU activation function with 'tanh' approximation element-wise
     https://pytorch.org/docs/stable/generated/torch.nn.GELU.html
     """
@@ -210,14 +210,14 @@ def GELU(input: Tensor) -> Tensor:
 
 
 def one_hot(input: Tensor, num_classes: int) -> Tensor:
-    """Takes a Tensor containing indices of shape (*) and returns a tensor of shape (*, num_classes) 
+    """Takes a Tensor containing indices of shape (*) and returns a tensor of shape (*, num_classes)
     that contains zeros except a 1 where the index of last dimension matches the corresponding value of the input tensor.
     This is analogous to torch.nn.functional.one_hot (which contains helpful examples you may want to play around with)
 
-    Hint: You may want to use a combination of np.eye, tensor_from_numpy, 
+    Hint: You may want to use a combination of np.eye, tensor_from_numpy,
     """
     return tensor_from_numpy(
-                np.eye(num_classes)[input.to_numpy().astype(int)], 
+                np.eye(num_classes)[input.to_numpy().astype(int)],
                 backend=input.backend
             )
 
@@ -237,28 +237,30 @@ def logsumexp(input: Tensor, dim: int) -> Tensor:
     Returns:
         out : The output tensor with the same number of dimensions as input (equiv. to keepdims=True)
             NOTE: minitorch functions/tensor functions typically keep dimensions if you provide a dimensions.
-    """  
+    """
     ### BEGIN YOUR SOLUTION
-    raise NotImplementedError
+    max_logit = max(input, dim)
+    sum_exp = (input - max_logit).exp().sum(dim=dim)
+    log_sum_exp = sum_exp.log()
+    return max_logit + log_sum_exp
     ### END YOUR SOLUTION
-
-
-
-
 
 def softmax_loss(logits: Tensor, target: Tensor) -> Tensor:
     """Softmax + Cross Entropy Loss function with 'reduction=None'.
     Formula is provided in writeup.
 
-    Args: 
-        logits : (minibatch, C) Tensor of raw logits       
-        target : (minibatch, ) Tensor of true labels 
+    Args:
+        logits : (minibatch, C) Tensor of raw logits
+        target : (minibatch, ) Tensor of true labels
 
-    Returns: 
+    Returns:
         loss : (minibatch, )
     """
     result = None
     ### BEGIN YOUR SOLUTION
-    raise NotImplementedError
+    batch_size = logits.shape[0]
+    lse = logsumexp(logits, dim=1)
+    one_hot_res = one_hot(target, logits.shape[1])
+    result = lse - (logits * one_hot_res).sum(dim=1)
     ### END YOUR SOLUTION
     return result.view(batch_size, )

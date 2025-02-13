@@ -22,7 +22,8 @@ import pycuda.autoinit
 import pycuda.driver as cuda
 
 # Load the shared library
-lib = ctypes.CDLL("minitorch/cuda_kernels/combine.so")
+# lib = ctypes.CDLL("minitorch/cuda_kernels/combine.so")
+lib = ctypes.CDLL("src/combine.so")
 datatype = np.float32
 
 # function map
@@ -43,7 +44,7 @@ fn_map = {
   operators.inv_back: 14,
   operators.is_close: 15,
   operators.max: 16,
-  operators.pow: 17, 
+  operators.pow: 17,
   operators.tanh: 18
 }
 
@@ -73,7 +74,7 @@ class CudaKernelOps(TensorOps):
             ]
 
             lib.tensorMap.restype = None
-            
+
             # assert out.size == a.size, f"zip {out.size}, {a.size}"
 
             lib.tensorMap(
@@ -318,7 +319,7 @@ class CudaKernelOps(TensorOps):
             a = a.contiguous().view(np.prod(a.shape[:-2]), a.shape[-2], a.shape[-1])
         if len(b.shape) > 3:
             b = b.contiguous().view(np.prod(b.shape[:-2]), b.shape[-2], b.shape[-1])
-        
+
         assert a.shape[0] == b.shape[0]
         assert a.shape[0] == out.shape[0]
 

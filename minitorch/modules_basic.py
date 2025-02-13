@@ -33,9 +33,10 @@ class Embedding(Module):
         self.num_embeddings = num_embeddings # Vocab size
         self.embedding_dim  = embedding_dim  # Embedding Dimension
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError
+        init_weight = rand((num_embeddings, embedding_dim), backend=backend)
+        self.weights = Parameter(init_weight)
         ### END YOUR SOLUTION
-    
+
     def forward(self, x: Tensor):
         """Maps word indices to one-hot vectors, and projects to embedding vectors.
 
@@ -47,27 +48,28 @@ class Embedding(Module):
         """
         bs, seq_len = x.shape
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError
+        one_hot_x = one_hot(x, self.num_embeddings)
+        return one_hot_x.matmul(self.weights.value)
         ### END YOUR SOLUTION
 
-    
+
 class Dropout(Module):
     def __init__(self, p_dropout: float=0.1):
         super().__init__()
         """During training, randomly zeroes some of the elements of the input tensor with probability :attr:`p_dropout`.
 
-        Attributes: 
+        Attributes:
             p_dropout : Probability an element will be zeroed.
         """
         self.p_dropout = p_dropout
 
-    def forward(self, x: Tensor) -> Tensor: 
+    def forward(self, x: Tensor) -> Tensor:
         """During training, randomly zero out elements of a tensor and scale by (1 - p_dropout)
-        
-        Args: 
+
+        Args:
             x : Tensor of shape (*)
-        
-        Returns: 
+
+        Returns:
             output : Tensor of shape (*)
         """
         ### BEGIN YOUR SOLUTION
@@ -96,10 +98,10 @@ class Linear(Module):
 
     def forward(self, x: Tensor):
         """Applies a linear transformation to the incoming data.
-        
-        Args: 
+
+        Args:
             x : Tensor of shape (n, in_size)
-        
+
         Returns:
             output : Tensor of shape (n, out_size)
         """
@@ -113,12 +115,12 @@ class LayerNorm1d(Module):
     def __init__(self, dim: int, eps: float, backend: TensorBackend):
         super().__init__()
         """Applies Layer Normalization over a mini-batch of 1-dimensional inputs.
-        
-        Args: 
+
+        Args:
             dim : Expected size of the last dimension to apply layer normalization.
             eps : A value added for numerical stability.
-        
-        Attributes: 
+
+        Attributes:
             weights : the learnable weights of the module of shape (self.dim, ) initialized to 1.
             bias    : the learnable bias of the module of shape (self.dim, ) initialized to 0.
         """
@@ -129,14 +131,14 @@ class LayerNorm1d(Module):
         ### END YOUR SOLUTION
 
     def forward(self, x: Tensor) -> Tensor:
-        """Applies Layer Normalization over a mini-batch of inputs. 
+        """Applies Layer Normalization over a mini-batch of inputs.
         NOTE: You can assume the input to this layer is a 2D tensor of shape (batch_size, dim)
         You will use implicit broadcasting in miniTorch to use the weight and bias.
-        
-        Input: 
+
+        Input:
             x - Tensor of shape (bs, dim)
-        
-        Output: 
+
+        Output:
             output - Tensor of shape (bs, dim)
         """
         batch, dim = x.shape
