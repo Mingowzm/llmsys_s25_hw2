@@ -115,7 +115,7 @@ class MultiHeadAttention(Module):
             mask = self.create_causal_mask(queries_len)
             logits = logits + mask
 
-        att = softmax(logits, dim=-1)
+        att = softmax(logits, dim=3)
         # att = self.dropout(att)
         out_heads = att @ v
         out_heads = out_heads.permute(0, 2, 1, 3).contiguous()
