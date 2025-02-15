@@ -116,7 +116,7 @@ class MultiHeadAttention(Module):
             logits = logits + mask
 
         att = softmax(logits, dim=-1)
-        att = self.dropout(att)
+        # att = self.dropout(att)
         out_heads = att @ v
         out_heads = out_heads.permute(0, 2, 1, 3).contiguous()
         out_concat = out_heads.view(batch_size, queries_len, num_head * q_dim)
@@ -139,8 +139,10 @@ class MultiHeadAttention(Module):
         ### BEGIN YOUR SOLUTION
         q, kT, v = self.project_to_query_key_value(x)
         att_out = self.self_attention(q, kT, v)
+        att_out = att_out.view(batch_size * seq_len, n_embd)
         out = self.out_projection(att_out)
-        out = self.dropout(out)
+        out = out.view(batch_size, seq_len, n_embd)
+        # out = self.dropout(out)
         return out
         # raise NotImplementedError
         ### END YOUR SOLUTION
