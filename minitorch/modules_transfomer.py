@@ -142,7 +142,7 @@ class MultiHeadAttention(Module):
         att_out = att_out.view(batch_size * seq_len, n_embd)
         out = self.out_projection(att_out)
         out = out.view(batch_size, seq_len, n_embd)
-        # out = self.dropout(out)
+        out = self.dropout(out)
         return out
         # raise NotImplementedError
         ### END YOUR SOLUTION
@@ -208,11 +208,12 @@ class TransformerLayer(Module):
             ff : FeedForward layer
         """
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError
-        # self.ln_1
-        # self.ln_2
-        # self.attention
-        # self.ff
+        # raise NotImplementedError
+        self.ln_1 = LayerNorm1d(n_embd, eps=ln_eps, backend=backend)
+        self.ln_2 = LayerNorm1d(n_embd, eps=ln_eps, backend=backend)
+        self.attention = MultiHeadAttention(n_embd, n_head, causal=True, p_dropout=p_dropout, bias=bias, backend=backend)
+        self.ff = FeedForward(n_embd, p_dropout=p_dropout, bias=bias, backend=backend)
+        self.dropout = Dropout(p_dropout)
         ### END YOUR SOLUTION
 
     def forward(self, x):
@@ -226,7 +227,23 @@ class TransformerLayer(Module):
         """
         batch_size, seq_len, n_embd = x.shape
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError
+        res = x
+        x_2d = x.view(batch_size * seq_len, n_embd)
+        x_norm = self.ln_1(x_2d)
+        x = x_norm.view(batch_size, seq_len, n_embd)
+
+        x = self.attention(x)
+        x = self.dropout(x) + res
+
+        res = x
+        x_2d = x.view(batch_size * seq_len, n_embd)
+        x_norm = self.ln_2(x_2d)
+        x = x_norm.view(batch_size, seq_len, n_embd)
+        x = self.ff(x)
+        x = self.dropout(x) + res
+
+        return x
+        # raise NotImplementedError
         ### END YOUR SOLUTION
 
 
@@ -269,16 +286,16 @@ class DecoderLM(Module):
         self.n_embd              = n_embd
         self.n_vocab             = n_vocab
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError
-        # self.token_embeddings    =
-        # self.position_embeddings =
-        # self.t_layer_1           =
-        # self.t_layer_2           =
-        # self.t_layer_3           =
-        # self.t_layer_4           =
-        # self.dropout             =
-        # self.ln                  =
-        # self.lm_head             =
+        # raise NotImplementedError
+        self.token_embeddings    = Embedding(n_vocab, n_embd, backend=backend)
+        self.position_embeddings = Embedding(n_positions, n_embd, backend=backend)
+        self.t_layer_1           = TransformerLayer(n_embd, n_head, p_dropout, ln_eps, bias, backend)
+        self.t_layer_2           = TransformerLayer(n_embd, n_head, p_dropout, ln_eps, bias, backend)
+        self.t_layer_3           = TransformerLayer(n_embd, n_head, p_dropout, ln_eps, bias, backend)
+        self.t_layer_4           = TransformerLayer(n_embd, n_head, p_dropout, ln_eps, bias, backend)
+        self.dropout             = Dropout(p_dropout)
+        self.ln                  = LayerNorm1d(n_embd, eps=ln_eps, backend=backend)
+        self.lm_head             = Linear(n_embd, n_vocab, bias=bias, backend=backend)
         ### END YOUR SOLUTION
 
     def forward(self, idx):
@@ -293,15 +310,29 @@ class DecoderLM(Module):
         batch_size, seq_len = idx.shape
 
         ### BEGIN SOLUTION
-        raise NotImplementedError
+        # raise NotImplementedError
         # Get Token Embeddings of shape (batch_size, seq_len, n_embd)
+        token_emb = self.token_embeddings(idx)
         """
         Create Positional Embeddings of shape (1, seq_len, n_embd)
          - First create a tensor of position ids [0, 1, 2, ..., seq_len - 1] of shape (1, seq_len)
          - Pass the position ids through your positional embedding layer
          - Ensure shape is (1, seq_len, n_embd)
         """
+        pos_ids = tensor_from_numpy(np.arange(seq_len).reshape(1, -1), backend=self.backend)
+        pos_emb = self.position_embeddings(pos_ids)
+        x = token_emb + pos_emb
+        x = self.dropout(x)
         # Pass through each transformer Layer
+        x = self.t_layer_1(x)
+        x = self.t_layer_2(x)
+        x = self.t_layer_3(x)
+        x = self.t_layer_4(x)
         # Final LayerNorm
+        x = self.ln(x.view(batch_size * seq_len, self.n_embd))
+        x = x.view(batch_size, seq_len, self.n_embd)
         # Get correct shape
+        x = x.view(batch_size * seq_len, self.n_embd)
+        out = self.lm_head(x)
+        return out.view(batch_size, seq_len, self.n_vocab)
         ### END SOLUTION
