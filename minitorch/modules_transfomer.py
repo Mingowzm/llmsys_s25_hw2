@@ -319,7 +319,7 @@ class DecoderLM(Module):
          - Pass the position ids through your positional embedding layer
          - Ensure shape is (1, seq_len, n_embd)
         """
-        pos_ids = tensor_from_numpy(np.arange(seq_len).reshape(1, -1), backend=self.backend)
+        pos_ids = tensor_from_numpy(np.arange(seq_len).reshape(1, seq_len), backend=self.backend)
         pos_emb = self.position_embeddings(pos_ids)
         x = token_emb + pos_emb
         x = self.dropout(x)
