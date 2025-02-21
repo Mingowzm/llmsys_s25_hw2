@@ -34,7 +34,7 @@ class Embedding(Module):
         self.num_embeddings = num_embeddings # Vocab size
         self.embedding_dim  = embedding_dim  # Embedding Dimension
         ### BEGIN YOUR SOLUTION
-        init_weight = rand((num_embeddings, embedding_dim), backend=backend)
+        init_weight = tensor_from_numpy(np.random.normal(0, 1, (num_embeddings, embedding_dim)), backend=backend)
         self.weights = Parameter(init_weight)
         ### END YOUR SOLUTION
 
@@ -106,11 +106,13 @@ class Linear(Module):
         self.out_size = out_size
         self.use_bias = bias
 
-        w = rand((in_size, out_size), backend=backend)
+        limit = 1 / np.sqrt(in_size)
+
+        w = tensor_from_numpy(np.random.uniform(-limit, limit, (in_size, out_size)), backend=backend)
         self.weights = Parameter(w)
 
         if bias:
-            b = rand((out_size,), backend=backend)
+            b = tensor_from_numpy(np.random.uniform(-limit, limit, (out_size,)), backend=backend)
             self.bias = Parameter(b)
         else:
             self.bias = None
