@@ -330,9 +330,9 @@ class DecoderLM(Module):
         x = self.t_layer_4(x)
         # Final LayerNorm
         x = self.ln(x.view(batch_size * seq_len, self.n_embd))
-        x = x.view(batch_size, seq_len, self.n_embd)
+        # x = x.view(batch_size, seq_len, self.n_embd)
         # Get correct shape
-        x = x.view(batch_size * seq_len, self.n_embd)
+        # x = x.view(batch_size * seq_len, self.n_embd)
         out = self.lm_head(x)
         return out.view(batch_size, seq_len, self.n_vocab)
         ### END SOLUTION

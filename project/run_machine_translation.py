@@ -102,7 +102,7 @@ def collate_batch(
     where the pad_ids makes the length of input_ids to be model_max_length.
 
     ["labels"]: the next tokens to be predicted, which will be used in the cross-entropy
-    loss function, e.g., for an example tokenized as [a, b, c, d], "input_ids" and "labels" 
+    loss function, e.g., for an example tokenized as [a, b, c, d], "input_ids" and "labels"
     can be [a, b, c] and [b, c, d], respectively.
 
     ["label_token_weights"] The 'label_token_weights' are used to differentiate
@@ -139,7 +139,7 @@ def collate_batch(
     input_ids = minitorch.tensor_from_numpy(input_ids, backend=backend)
     labels    = minitorch.tensor_from_numpy(labels, backend=backend)
     label_token_weights = minitorch.tensor_from_numpy(label_token_weights, backend=backend)
-    
+
     # input_ids = token_ids[:, :-1].tolist()
     # labels    = token_ids[:, 1:].tolist()
     # label_token_weights = tgt_token_mask[:, 1:].tolist()
@@ -299,8 +299,12 @@ def generate(model,
             # TODO
             # run the model with current token_ids, and predict the next token (gen_id)
             # hint: obtain the logits of next token, and take the argmax.
-            gen_id = 0
-            raise NotImplementedError("Generation Function Not Implemented Yet")
+            # gen_id = 0
+            input_tensor = minitorch.tensor_from_numpy(np.array(token_ids)[None, :], backend=backend)
+            logits = model(idx=input_tensor)
+            next_token_logits = logits[:, -1, :]
+            gen_id = next_token_logits.argmax(dim=-1).item()
+            # raise NotImplementedError("Generation Function Not Implemented Yet")
             # END ASSIGN2_2
 
             if gen_id == tokenizer.vocab[f'<eos_{tgt_key}>']:
