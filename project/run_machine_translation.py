@@ -302,8 +302,13 @@ def generate(model,
             # gen_id = 0
             input_tensor = minitorch.tensor_from_numpy(np.array(token_ids)[None, :], backend=backend)
             logits = model(idx=input_tensor)
-            next_token_logits = logits[:, -1, :]
-            gen_id = next_token_logits.argmax(dim=-1).item()
+            batch_size, seq_len, vocab_size = logits.shape
+            last_index = seq_len - 1
+            next_token_logits = minitorch.tensor_from_numpy(
+                np.array([logits[0, last_index, i] for i in range(vocab_size)]),
+                backend=backend
+            )
+            gen_id = np.argmax(next_token_logits.to_numpy())
             # raise NotImplementedError("Generation Function Not Implemented Yet")
             # END ASSIGN2_2
 
